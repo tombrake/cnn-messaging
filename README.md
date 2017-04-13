@@ -45,6 +45,8 @@ messenger.start()
 
 ### Subscribing to notifications
 
+Messages are delivered all subscribed instances.
+
 ```
 const topic = 'some.topic.name';
 const messenger = require('cnn-messaging').AmqpMessenger(config);
@@ -70,6 +72,8 @@ messenger.start()
 ```
 
 ### Subscribing to work
+
+Messages are delivered to only 1 of many subscribed instances, and must be ack'd or nack'd to get the next message.
 
 ```
 const topic = 'some.topic.name';
