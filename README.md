@@ -29,6 +29,8 @@ messenger.start()
 
 ```
 
+See tests for more examples.
+
 ### API
 
 * ```start()```: This will perform any asynchronous initialization required for the service.
