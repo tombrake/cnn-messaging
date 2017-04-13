@@ -14,23 +14,6 @@ To run the tests, use ```docker-compose up -d``` to start the dependancies.
 npm install --save cnn-messaging
 ```
 
-then
-
-```
-const topic = 'some.topic.name';
-const messenger = require('cnn-messaging').AmqpMessenger(config);
-const Message = require('cnn-messaging').Message;
-
-messenger.start()
-  .then(() => {
-    const message = new Message({body: {some: 'thing'}}))
-    messenger.publish(topic, message);      
-  })
-
-```
-
-See tests for more examples.
-
 ### API
 
 * ```start()```: This will perform any asynchronous initialization required for the service.
@@ -44,3 +27,74 @@ See tests for more examples.
 The observables returned from the methods above are the RxJs implementation of ES6 Observables. More specifically, they are of type Rx.Subject();
 
 Observables provides advanced features for event streams, such as filtering, batching, debouncing, etc. Read more about RxJs [here](http://reactivex.io) and [here](https://github.com/Reactive-Extensions/RxJS).
+
+### Publishing messages
+
+```
+const topic = 'some.topic.name';
+const messenger = require('cnn-messaging').AmqpMessenger(config);
+const Message = require('cnn-messaging').Message;
+
+messenger.start()
+  .then(() => {
+    const message = new Message({event: {some: 'thing'}}));
+    messenger.publish(topic, message);      
+  })
+
+```
+
+### Subscribing to notifications
+
+```
+const topic = 'some.topic.name';
+const messenger = require('cnn-messaging').AmqpMessenger(config);
+
+messenger.start()
+  .then(() => {
+    return messenger.createWorkObservable('notification.*');    
+  })
+  .then((observable) => {
+      observable.subscribe(
+          function (message) {
+                console.log('New Message: ' + message);
+          },
+          function (err) {
+            console.log('Error: ' + err);
+          },
+          function () {
+            console.log('Completed');
+          });
+
+  });
+
+```
+
+### Subscribing to work
+
+```
+const topic = 'some.topic.name';
+const messenger = require('cnn-messaging').AmqpMessenger(config);
+
+messenger.start()
+  .then(() => {
+    return messenger.createWorkObservable('work.*', 'test-work-queue'); // you must provide a work queue name  
+  })
+  .then((observable) => {
+      observable.subscribe(
+          function (message) {
+                console.log('New Message: ' + message);
+                // process message, then
+                message.ack(messenger.channel.work); // you must ack a message to get another one
+          },
+          function (err) {
+            console.log('Error: ' + err);
+          },
+          function () {
+            console.log('Completed');
+          });
+
+  });
+
+```
+
+See tests for more examples.
