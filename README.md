@@ -26,7 +26,7 @@ npm install --save cnn-messaging
 
 The observables returned from the methods above are the RxJs implementation of ES6 Observables. More specifically, they are of type Rx.Subject();
 
-Observables provides advanced features for event streams, such as filtering, batching, debouncing, etc. Read more about RxJs [here](http://reactivex.io) and [here](https://github.com/Reactive-Extensions/RxJS).
+Observables provide advanced features for event streams, such as filtering, batching, debouncing, etc. Read more about RxJs [here](http://reactivex.io) and [here](https://github.com/Reactive-Extensions/RxJS).
 
 ### Publishing messages
 
