@@ -51,7 +51,7 @@ const messenger = require('cnn-messaging').AmqpMessenger(config);
 
 messenger.start()
   .then(() => {
-    return messenger.createWorkObservable('notification.*');    
+    return messenger.createNotificationObservable('notification.*');    
   })
   .then((observable) => {
       observable.subscribe(
