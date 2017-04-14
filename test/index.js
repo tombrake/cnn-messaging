@@ -289,7 +289,7 @@ describe('KafkaClient', function () {
                         } else {
                             resolve();
                         }
-                    }, 5000);
+                    }, 4000);
                 });
             });
     });
