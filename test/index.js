@@ -4,7 +4,6 @@ const chai = require('chai');
 chai.should();
 
 const AmqpClient = require('../lib/amqp');
-const KafkaClient = require('../lib/kafka');
 const Messenger = require('../lib/messenger');
 const Message = require('../lib/message');
 
@@ -12,16 +11,6 @@ const amqpTestConfig = {
     amqp: {
         connectionString: 'amqp://localhost:5672',
         exchangeName: 'MOCHA_TEST'
-    }
-};
-
-const kafkaTestConfig = {
-    kafka: {
-        connectionString: 'kafka://golden-hang-glider-01.srvs.cloudkafka.com:9093',
-        ssl: {
-            key: './private_key.pem',
-            cert: './signed_cert.pem'
-        }
     }
 };
 
@@ -126,17 +115,19 @@ describe('AmqpClient', function () {
             .then(() => {
                 let messageCount = 0;
                 return new Promise((resolve, reject) => {
-                    observable1.subscribe((message) => {
+                    const sub1 = observable1.subscribe((message) => {
                         (message.event.text).should.equal('test');
                         messageCount++;
                         if (messageCount == 2) {
                             resolve();
                         }
                     }, reject, resolve);
-                    observable2.subscribe((message) => {
+                    const sub2 = observable2.subscribe((message) => {
                         (message.event.text).should.equal('test');
                         messageCount++;
                         if (messageCount == 2) {
+                            sub1.unsubscribe();
+                            sub2.unsubscribe();
                             resolve();
                         }
                     }, reject, resolve);
@@ -170,12 +161,12 @@ describe('AmqpClient', function () {
             .then(() => {
                 let messageCount = 0;
                 return new Promise((resolve, reject) => {
-                    observable1.subscribe((message) => {
+                    const sub1 = observable1.subscribe((message) => {
                         (message.event.text).should.equal('test');
                         messageCount++;
                         message.ack();
                     }, reject, resolve);
-                    observable2.subscribe((message) => {
+                    const sub2 = observable2.subscribe((message) => {
                         (message.event.text).should.equal('test');
                         messageCount++;
                         message.ack();
@@ -185,111 +176,11 @@ describe('AmqpClient', function () {
                         if (messageCount !== 1) {
                             reject(new Error(`messageCount: ${messageCount}`));
                         } else {
+                            sub1.unsubscribe();
+                            sub2.unsubscribe();
                             resolve();
                         }
                     }, 500);
-                });
-            });
-    });
-});
-
-describe('KafkaClient', function () {
-    it('should start and stop', function () {
-        const messenger = KafkaClient(kafkaTestConfig);
-        return messenger.start()
-            .then(() => {
-                return messenger.stop();
-            });
-    });
-
-    it('multiple notification subscribers should get a notification', function () {
-        const publisher = KafkaClient(kafkaTestConfig);
-        const subscriber1 = KafkaClient(kafkaTestConfig);
-        const subscriber2 = KafkaClient(kafkaTestConfig);
-        let observable1;
-        let observable2;
-        return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
-            .then(() => {
-                return subscriber1.createNotificationObservable('test.notification');
-            })
-            .then((o) => {
-                observable1 = o;
-                return subscriber2.createNotificationObservable('test.notification');
-            })
-            .then((o) => {
-                observable2 = o;
-                const message = {
-                    event: {
-                        text: 'test'
-                    }
-                };
-                return publisher.publish('test.notification', Message(message));
-            })
-            .then(() => {
-                let messageCount = 0;
-                return new Promise((resolve, reject) => {
-                    observable1.subscribe((message) => {
-                        (message.event.text).should.equal('test');
-                        messageCount++;
-                        if (messageCount == 2) {
-                            resolve();
-                        }
-                    }, reject, resolve);
-                    observable2.subscribe((message) => {
-                        (message.event.text).should.equal('test');
-                        messageCount++;
-                        if (messageCount == 2) {
-                            resolve();
-                        }
-                    }, reject, resolve);
-                });
-            });
-    });
-
-    it('only a single work subscriber should get work', function () {
-        const publisher = KafkaClient(kafkaTestConfig);
-        const subscriber1 = KafkaClient(kafkaTestConfig);
-        const subscriber2 = KafkaClient(kafkaTestConfig);
-        let observable1;
-        let observable2;
-        return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
-            .then(() => {
-                return subscriber1.createWorkObservable('test.work', 'shared-work-group');
-            })
-            .then((o) => {
-                observable1 = o;
-                return subscriber2.createWorkObservable('test.work', 'shared-work-group');
-            })
-            .then((o) => {
-                observable2 = o;
-                const message = {
-                    event: {
-                        text: 'test'
-                    }
-                };
-                return publisher.publish('test.work', Message(message));
-            })
-            .then(() => {
-                let messageCount = 0;
-                return new Promise((resolve, reject) => {
-                    observable1.subscribe((message) => {
-                        (message.event.text).should.equal('test');
-                        messageCount++;
-                        message.ack();
-                    }, reject, resolve);
-                    observable2.subscribe((message) => {
-                        (message.event.text).should.equal('test');
-                        messageCount++;
-                        message.ack();
-                    }, reject, resolve);
-
-                    setTimeout(function () {
-                        if (messageCount !== 1) {
-                            reject(new Error(`messageCount: ${messageCount}`));
-                        } else {
-                            resolve();
-                        }
-                    }, 4000);
                 });
             });
     });
