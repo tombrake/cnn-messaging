@@ -14,7 +14,7 @@ To run the tests, use ```docker-compose up -d``` to start the dependancies.
 npm install --save cnn-messaging
 ```
 
-### API
+### AmqpMessenger API
 
 * ```start()```: This will perform any asynchronous initialization required for the service.
 * ```stop()```: This will perform any asynchronous steps for disconnecting and shutting down gracefully.
@@ -99,6 +99,20 @@ messenger.start()
 
   });
 
+```
+
+### SocketIORelay
+
+A socket IO relay instance takes an instance of a messenger, and an http server instance (could be from express or hapi) and provides a bridge for amqp topic subscriptions to web sockets.
+
+### Example App
+
+The example app runs in the web browser, and demonstrates wildcard subscription to topics from the Amqp Messenger.
+
+To run the example app, run ```
+npm install
+docker-compose up -d
+npm run example
 ```
 
 See tests for more examples.

@@ -7,7 +7,8 @@
     "coverage": "istanbul cover _mocha -- --recursive test/ --timeout 10000",
     "lint": "eslint .",
     "test": "DEBUG='*,-mocha*' _mocha --timeout 15000",
-    "ci": "npm run lint && npm run test"
+    "ci": "npm run lint && npm run test",
+    "example": "DEBUG=cnn* PORT=3000 node example/server.js"
   },
   "keywords": [
     "cnn",

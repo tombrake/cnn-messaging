@@ -1,0 +1,16 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+<script>
+  var socket = io('http://localhost:3000');
+  socket.emit('subscribe', 'test.message.*');
+  socket.on('test.message.*', (data) => {
+      console.log('got message', data);
+     var messagesDiv = document.getElementById('messages').innerHTML;
+     messagesDiv += '<br>';
+     messagesDiv += data;
+     document.getElementById('messages').innerHTML = messagesDiv;
+  });
+</script>
+
+<h2>messages</h2>
+<div id="messages">
+</div>
