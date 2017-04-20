@@ -6,7 +6,7 @@
   "scripts": {
     "coverage": "istanbul cover _mocha -- --recursive test/ --timeout 10000",
     "lint": "eslint .",
-    "test": "DEBUG='*,-mocha*' _mocha --timeout 15000",
+    "test": "DEBUG='cnn*,-mocha*' _mocha --timeout 15000",
     "ci": "npm run lint && npm run test",
     "example": "DEBUG=cnn* PORT=3000 node example/server.js"
   },
@@ -22,7 +22,8 @@
     "eslint": "^3.19.0",
     "istanbul": "^0.4.5",
     "mocha": "^3.2.0",
-    "sinon": "^2.1.0"
+    "sinon": "^2.1.0",
+    "socket.io-client": "^1.7.3"
   },
   "engines": {
     "node": ">=4.0.0"
