@@ -1,9 +1,13 @@
 'use strict';
 
-const AmqpMessenger = require('./lib/amqp');
+const Messenger = require('./lib/messenger');
 const Message = require('./lib/message');
+const AmqpMessenger = require('./lib/amqp');
+const SocketIORelay = require('./lib/socket.io');
 
 module.exports = {
+    Messenger,
+    Message,
     AmqpMessenger,
-    Message
+    SocketIORelay
 };

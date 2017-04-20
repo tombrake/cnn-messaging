@@ -3,9 +3,10 @@
 const chai = require('chai');
 chai.should();
 
-const AmqpClient = require('../lib/amqp');
-const Messenger = require('../lib/messenger');
-const Message = require('../lib/message');
+const Messenger = require('../index').Messenger;
+const AmqpMessenger = require('../index').AmqpMessenger;
+const SocketIORelay = require('../index').SocketIORelay;
+const Message = require('../index').Message;
 
 const amqpTestConfig = {
     amqp: {
@@ -80,9 +81,9 @@ describe('Basic Functionality', function () {
     });
 });
 
-describe('AmqpClient', function () {
+describe('AmqpMessenger', function () {
     it('should start and stop', function () {
-        const messenger = AmqpClient(amqpTestConfig);
+        const messenger = AmqpMessenger(amqpTestConfig);
         return messenger.start()
             .then(() => {
                 return messenger.stop();
@@ -90,9 +91,9 @@ describe('AmqpClient', function () {
     });
 
     it('multiple notification subscribers should get a notification', function () {
-        const publisher = AmqpClient(amqpTestConfig);
-        const subscriber1 = AmqpClient(amqpTestConfig);
-        const subscriber2 = AmqpClient(amqpTestConfig);
+        const publisher = AmqpMessenger(amqpTestConfig);
+        const subscriber1 = AmqpMessenger(amqpTestConfig);
+        const subscriber2 = AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -136,9 +137,9 @@ describe('AmqpClient', function () {
     });
 
     it('only a single work subscriber should get work', function () {
-        const publisher = AmqpClient(amqpTestConfig);
-        const subscriber1 = AmqpClient(amqpTestConfig);
-        const subscriber2 = AmqpClient(amqpTestConfig);
+        const publisher = AmqpMessenger(amqpTestConfig);
+        const subscriber1 = AmqpMessenger(amqpTestConfig);
+        const subscriber2 = AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -183,5 +184,91 @@ describe('AmqpClient', function () {
                     }, 500);
                 });
             });
+    });
+});
+
+describe('SocketIORelay', function () {
+    const app = require('http').createServer();
+    const amqpMessenger = new AmqpMessenger(amqpTestConfig);
+    before(function () {
+        require('../index').SocketIORelay({
+            server: app,
+            messenger: amqpMessenger
+        });
+
+        amqpMessenger.start()
+            .then(() => {
+                app.listen(process.env.PORT || 13000);
+            });
+    });
+
+    after(function () {
+        app.close();
+    });
+
+    it('should throw an error when missing an http server instance and an amqp messenger instance', function () {
+        try {
+            require('../index').SocketIORelay();
+            return Promise.reject();
+        } catch (e) {
+            e.should.exist;
+            return Promise.resolve();
+        }
+    });
+
+    it('should not throw an error when provided an http server instance and an amqp messenger instance', function () {
+        try {
+            require('../index').SocketIORelay({
+                server: require('http').createServer(),
+                messenger: AmqpMessenger(amqpTestConfig)
+            });
+            return Promise.resolve();
+        } catch (e) {
+            return Promise.reject();
+        }
+    });
+
+    it('should allow a client to subscribe to events and receive messages', function () {
+        return new Promise((resolve) => {
+            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`);
+            socket.on('connect', () => {
+                socket.on('test.message.*', () => {
+                    socket.emit('unsubscribe', 'test.message.*');
+                    resolve();
+                });
+                socket.emit('subscribe', 'test.message.*');
+                setTimeout(() => {
+                    amqpMessenger.publish('test.message.new', new Message({
+                        event: {
+                            some: {
+                                thing: '123'
+                            }
+                        }
+                    }));
+                }, 500);
+            });
+        });
+    });
+
+    it('should unsubscribe from amqp when no clients are listening', function () {
+        return new Promise((resolve) => {
+            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`);
+            socket.on('connect', () => {
+                socket.on('test.message.*', () => {
+                    socket.close();
+                    resolve();
+                });
+                socket.emit('subscribe', 'test.message.*');
+                setTimeout(() => {
+                    amqpMessenger.publish('test.message.new', new Message({
+                        event: {
+                            some: {
+                                thing: '123'
+                            }
+                        }
+                    }));
+                }, 500);
+            });
+        });
     });
 });
