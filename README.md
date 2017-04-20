@@ -109,7 +109,8 @@ A socket IO relay instance takes an instance of a messenger, and an http server 
 
 The example app runs in the web browser, and demonstrates wildcard subscription to topics from the Amqp Messenger.
 
-To run the example app, run ```
+To run the example app, run
+```
 npm install
 docker-compose up -d
 npm run example
