@@ -3,9 +3,10 @@
 const chai = require('chai');
 chai.should();
 
-const AmqpClient = require('../lib/amqp');
-const Messenger = require('../lib/messenger');
-const Message = require('../lib/message');
+const Messenger = require('../index').Messenger;
+const AmqpMessenger = require('../index').AmqpMessenger;
+const SocketIORelay = require('../index').SocketIORelay;
+const Message = require('../index').Message;
 
 const amqpTestConfig = {
     amqp: {
@@ -80,9 +81,9 @@ describe('Basic Functionality', function () {
     });
 });
 
-describe('AmqpClient', function () {
+describe('AmqpMessenger', function () {
     it('should start and stop', function () {
-        const messenger = AmqpClient(amqpTestConfig);
+        const messenger = AmqpMessenger(amqpTestConfig);
         return messenger.start()
             .then(() => {
                 return messenger.stop();
@@ -90,9 +91,9 @@ describe('AmqpClient', function () {
     });
 
     it('multiple notification subscribers should get a notification', function () {
-        const publisher = AmqpClient(amqpTestConfig);
-        const subscriber1 = AmqpClient(amqpTestConfig);
-        const subscriber2 = AmqpClient(amqpTestConfig);
+        const publisher = AmqpMessenger(amqpTestConfig);
+        const subscriber1 = AmqpMessenger(amqpTestConfig);
+        const subscriber2 = AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -136,9 +137,9 @@ describe('AmqpClient', function () {
     });
 
     it('only a single work subscriber should get work', function () {
-        const publisher = AmqpClient(amqpTestConfig);
-        const subscriber1 = AmqpClient(amqpTestConfig);
-        const subscriber2 = AmqpClient(amqpTestConfig);
+        const publisher = AmqpMessenger(amqpTestConfig);
+        const subscriber1 = AmqpMessenger(amqpTestConfig);
+        const subscriber2 = AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -184,4 +185,12 @@ describe('AmqpClient', function () {
                 });
             });
     });
+});
+
+describe('SocketIORelay', function () {
+    it('should require an http server instance and an amqp messenger instance');
+    it('should allow a client to subscribe to events and receive messages');
+    it('should allow multiple clients to subscribe and receive messages');
+    it('should unsubscribe from amqp when no clients are listening');
+    it('should stay subscribed to amqp when 1 client disconnects but others are listening');
 });
