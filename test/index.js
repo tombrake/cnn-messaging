@@ -5,7 +5,6 @@ chai.should();
 
 const Messenger = require('../index').Messenger;
 const AmqpMessenger = require('../index').AmqpMessenger;
-const SocketIORelay = require('../index').SocketIORelay;
 const Message = require('../index').Message;
 
 const amqpTestConfig = {
@@ -189,13 +188,12 @@ describe('AmqpMessenger', function () {
 
 describe('SocketIORelay', function () {
     const app = require('http').createServer();
-    const amqpMessenger = new AmqpMessenger(amqpTestConfig);
+    let amqpMessenger;
     before(function () {
-        require('../index').SocketIORelay({
-            server: app,
-            messenger: amqpMessenger
+        amqpMessenger = new AmqpMessenger({
+            amqp: amqpTestConfig.amqp,
+            http: app
         });
-
         amqpMessenger.start()
             .then(() => {
                 app.listen(process.env.PORT || 13000);
