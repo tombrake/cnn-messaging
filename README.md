@@ -1,5 +1,9 @@
 # CNN Messaging
 
+[![NPM Package](https://img.shields.io/npm/v/cnn-messaging.svg?style=flat-square)](https://www.npmjs.org/package/cnn-messaging)
+[![Build Status](https://img.shields.io/travis/cnnlabs/cnn-messaging.svg?branch=master&style=flat-square)](https://travis-ci.org/cnnlabs/cnn-messaging)
+[![Coverage Status](https://img.shields.io/coveralls/cnnlabs/cnn-messaging.svg?branch=master&style=flat-square)](https://coveralls.io/github/cnnlabs/cnn-messaging)
+
 ### What it does
 
 This module provides a Message class to standardize message formats, and an abstraction on top of messaging APIs to provide a common interface for event-source messaging at CNN.
