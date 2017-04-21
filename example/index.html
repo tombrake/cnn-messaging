@@ -1,12 +1,40 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <script>
   var socket = io('http://localhost:3000');
+  var objects = {};
   socket.on('test.message.*', (data) => {
-      console.log('got message', data);
-     var messagesDiv = document.getElementById('messages').innerHTML;
-     messagesDiv += '<br>';
-     messagesDiv += data;
-     document.getElementById('messages').innerHTML = messagesDiv;
+     data = JSON.parse(data);
+     console.log(data);
+     if (!objects[data.change.objectId]) {
+         objects[data.change.objectId] = {
+             id: data.change.objectId
+         };
+     }
+     objects[data.change.objectId].version = data.change.objectVersion;
+     if (data.change && data.change.action === 'new') {
+         _.merge(objects[data.change.objectId], data.change.objectChanges.add);
+     }
+     if (data.change && data.change.action === 'update') {
+         if (data.change.objectChanges.add) {
+             _.merge(objects[data.change.objectId], data.change.objectChanges.add);
+         }
+         if (data.change.objectChanges.update) {
+             _.merge(objects[data.change.objectId], data.change.objectChanges.update);
+         }
+         if (data.change.objectChanges.push) {
+             Object.keys(data.change.objectChanges.push).forEach(function(pushKey) {
+                 objects[data.change.objectId][pushKey].push(data.change.objectChanges.push[pushKey]);
+             });
+         }
+         if (data.change.objectChanges.increment) {
+             Object.keys(data.change.objectChanges.increment).forEach(function(incrementKey) {
+                 objects[data.change.objectId][incrementKey] = objects[data.change.objectId][incrementKey] + data.change.objectChanges.increment[incrementKey];
+             });
+         }
+     }
+     console.log(objects);
+     document.getElementById('messages').innerHTML = "<pre><code>" + JSON.stringify(objects[data.change.objectId], null, '  ') + "</code></pre>";
   });
   socket.emit('subscribe', 'test.message.*');
 </script>
