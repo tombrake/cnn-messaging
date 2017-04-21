@@ -137,4 +137,6 @@ docker-compose up -d
 npm run example
 ```
 
+and open the browser to [http://localhost:3000](http://localhost:3000)
+
 See tests for more examples.
