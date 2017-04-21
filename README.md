@@ -103,7 +103,24 @@ messenger.start()
 
 ### SocketIORelay
 
-A socket IO relay instance takes an instance of a messenger, and an http server instance (could be from express or hapi) and provides a bridge for amqp topic subscriptions to web sockets.
+If you pass an instance of an http server as a parameter to the Messenger, then it will enable a socket.io relay automatically.
+
+```
+const app = require('http').createServer(handler);
+const messenger = require('../index').AmqpMessenger({
+    amqp: {
+        connectionString: 'amqp://localhost:5672',
+        exchangeName: 'EXAMPLE_APP'
+    },
+    http: app
+});
+
+messenger.start()
+    .then(() => {
+        console.log(`Starting on port ${process.env.PORT || 3000}`);
+        app.listen(process.env.PORT || 3000);
+    });
+```
 
 ### Example App
 
