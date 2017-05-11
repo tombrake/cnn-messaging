@@ -194,7 +194,7 @@ describe('SocketIORelay', function () {
             amqp: amqpTestConfig.amqp,
             http: app
         });
-        amqpMessenger.start()
+        return amqpMessenger.start()
             .then(() => {
                 app.listen(process.env.PORT || 13000);
             });
@@ -228,7 +228,7 @@ describe('SocketIORelay', function () {
 
     it('should allow a client to subscribe to events and receive messages', function () {
         return new Promise((resolve) => {
-            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`);
+            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`, {transports: ['websocket']});
             socket.on('connect', () => {
                 socket.on('test.message.*', () => {
                     socket.emit('unsubscribe', 'test.message.*');
@@ -243,14 +243,14 @@ describe('SocketIORelay', function () {
                             }
                         }
                     }));
-                }, 500);
+                }, 100);
             });
         });
     });
 
     it('should unsubscribe from amqp when no clients are listening', function () {
         return new Promise((resolve) => {
-            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`);
+            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`, {transports: ['websocket']});
             socket.on('connect', () => {
                 socket.on('test.message.*', () => {
                     socket.close();
@@ -265,7 +265,7 @@ describe('SocketIORelay', function () {
                             }
                         }
                     }));
-                }, 500);
+                }, 100);
             });
         });
     });

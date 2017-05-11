@@ -1,7 +1,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <script>
-  var socket = io('http://localhost:3000');
+  var socket = io('/', {transports: ['websocket']});
   var objects = {};
   socket.on('test.message.*', (data) => {
      data = JSON.parse(data);
