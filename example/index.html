@@ -1,42 +1,46 @@
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/1.7.3/socket.io.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script>
 <script>
-  var socket = io('/', {transports: ['websocket']});
+  var ws = new WebSocket('ws://localhost:3001/');
   var objects = {};
-  socket.on('test.message.*', (data) => {
-     data = JSON.parse(data);
-     console.log(data);
-     if (!objects[data.change.objectId]) {
-         objects[data.change.objectId] = {
-             id: data.change.objectId
+
+  ws.addEventListener('message', (msg) => {
+     console.log('message', msg);
+     var message = JSON.parse(msg.data);
+
+     if (!objects[message.context.objectId]) {
+         objects[message.context.objectId] = {
+             id: message.context.objectId
          };
      }
-     objects[data.change.objectId].version = data.change.objectVersion;
-     if (data.change && data.change.action === 'new') {
-         _.merge(objects[data.change.objectId], data.change.objectChanges.add);
+     objects[message.context.objectId].version = message.context.objectVersion;
+     if (message.context && message.context.action === 'new') {
+         _.merge(objects[message.context.objectId], message.event.add);
      }
-     if (data.change && data.change.action === 'update') {
-         if (data.change.objectChanges.add) {
-             _.merge(objects[data.change.objectId], data.change.objectChanges.add);
+     if (message.event && message.context.action === 'update') {
+         if (message.event.add) {
+             _.merge(objects[message.context.objectId], message.event.add);
          }
-         if (data.change.objectChanges.update) {
-             _.merge(objects[data.change.objectId], data.change.objectChanges.update);
+         if (message.event.update) {
+             _.merge(objects[message.context.objectId], message.event.update);
          }
-         if (data.change.objectChanges.push) {
-             Object.keys(data.change.objectChanges.push).forEach(function(pushKey) {
-                 objects[data.change.objectId][pushKey].push(data.change.objectChanges.push[pushKey]);
+         if (message.event.push) {
+             Object.keys(message.event.push).forEach(function(pushKey) {
+                 objects[message.context.objectId][pushKey].push(message.event.push[pushKey]);
              });
          }
-         if (data.change.objectChanges.increment) {
-             Object.keys(data.change.objectChanges.increment).forEach(function(incrementKey) {
-                 objects[data.change.objectId][incrementKey] = objects[data.change.objectId][incrementKey] + data.change.objectChanges.increment[incrementKey];
+         if (message.event.increment) {
+             Object.keys(message.event.increment).forEach(function(incrementKey) {
+                 objects[message.context.objectId][incrementKey] = objects[message.context.objectId][incrementKey] + message.event.increment[incrementKey];
              });
          }
      }
      console.log(objects);
-     document.getElementById('messages').innerHTML = "<pre><code>" + JSON.stringify(objects[data.change.objectId], null, '  ') + "</code></pre>";
+     document.getElementById('messages').innerHTML = "<pre><code>" + JSON.stringify(objects[message.context.objectId], null, '  ') + "</code></pre>";
   });
-  socket.emit('subscribe', 'test.message.*');
+
+  ws.addEventListener('open', function() {
+     ws.send(JSON.stringify({action: 'subscribe', topic: 'test.message.*'}));
+  });
 </script>
 
 <h2>messages</h2>

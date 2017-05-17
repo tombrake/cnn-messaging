@@ -186,27 +186,28 @@ describe('AmqpMessenger', function () {
     });
 });
 
-describe('SocketIORelay', function () {
-    const app = require('http').createServer();
+describe('WebsocketRelay', function () {
     let amqpMessenger;
     before(function () {
         amqpMessenger = new AmqpMessenger({
             amqp: amqpTestConfig.amqp,
-            http: app
+            port: 13000
         });
-        return amqpMessenger.start()
-            .then(() => {
-                app.listen(process.env.PORT || 13000);
-            });
+        return amqpMessenger.start();
     });
 
     after(function () {
-        app.close();
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                return amqpMessenger.stop()
+                    .then(resolve);
+            }, 100);
+        });
     });
 
     it('should throw an error when missing an http server instance and an amqp messenger instance', function () {
         try {
-            require('../index').SocketIORelay();
+            require('../index').WebsocketRelay();
             return Promise.reject();
         } catch (e) {
             e.should.exist;
@@ -214,27 +215,14 @@ describe('SocketIORelay', function () {
         }
     });
 
-    it('should not throw an error when provided an http server instance and an amqp messenger instance', function () {
-        try {
-            require('../index').SocketIORelay({
-                server: require('http').createServer(),
-                messenger: AmqpMessenger(amqpTestConfig)
-            });
-            return Promise.resolve();
-        } catch (e) {
-            return Promise.reject();
-        }
-    });
-
     it('should allow a client to subscribe to events and receive messages', function () {
         return new Promise((resolve) => {
-            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`, {transports: ['websocket']});
-            socket.on('connect', () => {
-                socket.on('test.message.*', () => {
-                    socket.emit('unsubscribe', 'test.message.*');
-                    resolve();
-                });
-                socket.emit('subscribe', 'test.message.*');
+            const WebSocket = require('uws');
+            const ws = new WebSocket('ws://localhost:13000/', {
+                perMessageDeflate: false
+            });
+            ws.on('open', () => {
+                ws.send(JSON.stringify({action: 'subscribe', topic: 'test.message.*'}));
                 setTimeout(() => {
                     amqpMessenger.publish('test.message.new', new Message({
                         event: {
@@ -244,21 +232,26 @@ describe('SocketIORelay', function () {
                         }
                     }));
                 }, 100);
+            });
+            ws.on('message', () => {
+                ws.send(JSON.stringify({action: 'unsubscribe', topic: 'test.message.*'}));
+                setTimeout(() => {
+                    resolve();
+                }, 1000);
             });
         });
     });
 
     it('should unsubscribe from amqp when no clients are listening', function () {
         return new Promise((resolve) => {
-            const socket = require('socket.io-client')(`http://localhost:${process.env.PORT || 13000}`, {transports: ['websocket']});
-            socket.on('connect', () => {
-                socket.on('test.message.*', () => {
-                    socket.close();
-                    resolve();
-                });
-                socket.emit('subscribe', 'test.message.*');
+            const WebSocket = require('uws');
+            const ws = new WebSocket('ws://localhost:13000/', {
+                perMessageDeflate: false
+            });
+            ws.on('open', () => {
+                ws.send(JSON.stringify({action: 'subscribe', topic: 'test.message2.*'}));
                 setTimeout(() => {
-                    amqpMessenger.publish('test.message.new', new Message({
+                    amqpMessenger.publish('test.message2.new', new Message({
                         event: {
                             some: {
                                 thing: '123'
@@ -266,6 +259,10 @@ describe('SocketIORelay', function () {
                         }
                     }));
                 }, 100);
+            });
+            ws.on('message', () => {
+                ws.close();
+                resolve();
             });
         });
     });

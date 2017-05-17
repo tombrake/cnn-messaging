@@ -105,25 +105,20 @@ messenger.start()
 
 ```
 
-### SocketIORelay
+### Websocket Relay
 
-If you pass an instance of an http server as a parameter to the Messenger, then it will enable a socket.io relay automatically.
+If you provide a port as a parameter to the Messenger, then it will enable a websocket relay.
 
 ```
-const app = require('http').createServer(handler);
 const messenger = require('../index').AmqpMessenger({
     amqp: {
         connectionString: 'amqp://localhost:5672',
         exchangeName: 'EXAMPLE_APP'
     },
-    http: app
+    port: 3000
 });
 
-messenger.start()
-    .then(() => {
-        console.log(`Starting on port ${process.env.PORT || 3000}`);
-        app.listen(process.env.PORT || 3000);
-    });
+return messenger.start();
 ```
 
 ### Example App

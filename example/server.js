@@ -9,12 +9,13 @@ const messenger = require('../index').AmqpMessenger({
         connectionString: 'amqp://localhost:5672',
         exchangeName: 'EXAMPLE_APP'
     },
-    http: app
+    port: process.env.WSPORT || 3001
 });
 
 messenger.start()
     .then(() => {
-        console.log(`Starting on port ${process.env.PORT || 3000}`);
+        console.log(`Starting http on port ${process.env.PORT || 3000}`);
+        console.log(`Starting ws on port ${process.env.WSPORT || 3001}`);
         app.listen(process.env.PORT || 3000);
     });
 
@@ -29,16 +30,16 @@ function handler(req, res) {
         const objectId = uuidV1();
         setTimeout(() => {
             messenger.publish('test.message.new', new Message({
-                change: {
+                context: {
                     model: 'person',
                     action: 'new',
                     objectId,
-                    objectVersion: 1,
-                    objectChanges: {
-                        add: {
-                            name: {
-                                first: 'Bob'
-                            }
+                    objectVersion: 1
+                },
+                event: {
+                    add: {
+                        name: {
+                            first: 'Bob'
                         }
                     }
                 }
@@ -47,16 +48,16 @@ function handler(req, res) {
 
         setTimeout(() => {
             messenger.publish('test.message.update', new Message({
-                change: {
+                context: {
                     model: 'person',
                     action: 'update',
                     objectId,
-                    objectVersion: 2,
-                    objectChanges: {
-                        add: {
-                            name: {
-                                last: 'Thibault'
-                            }
+                    objectVersion: 2
+                },
+                event: {
+                    add: {
+                        name: {
+                            last: 'Thibault'
                         }
                     }
                 }
@@ -65,17 +66,17 @@ function handler(req, res) {
 
         setTimeout(() => {
             messenger.publish('test.message.update', new Message({
-                change: {
+                context: {
                     model: 'person',
                     action: 'update',
                     objectId,
-                    objectVersion: 3,
-                    objectChanges: {
-                        add: {
-                            status: 'Listening to John Lennon',
-                            favoriteSongs: [],
-                            songsHeard: 0
-                        }
+                    objectVersion: 3
+                },
+                event: {
+                    add: {
+                        status: 'Listening to John Lennon',
+                        favoriteSongs: [],
+                        songsHeard: 0
                     }
                 }
             }));
@@ -83,18 +84,18 @@ function handler(req, res) {
 
         setTimeout(() => {
             messenger.publish('test.message.update', new Message({
-                change: {
+                context: {
                     model: 'person',
                     action: 'update',
                     objectId,
-                    objectVersion: 4,
-                    objectChanges: {
-                        push: {
-                            favoriteSongs: 'Imagine'
-                        },
-                        increment: {
-                            songsHeard: 1
-                        }
+                    objectVersion: 4
+                },
+                event: {
+                    push: {
+                        favoriteSongs: 'Imagine'
+                    },
+                    increment: {
+                        songsHeard: 1
                     }
                 }
             }));
@@ -102,18 +103,18 @@ function handler(req, res) {
 
         setTimeout(() => {
             messenger.publish('test.message.update', new Message({
-                change: {
+                context: {
                     model: 'person',
                     action: 'update',
                     objectId,
-                    objectVersion: 5,
-                    objectChanges: {
-                        push: {
-                            favoriteSongs: 'Strawberry Fields'
-                        },
-                        increment: {
-                            songsHeard: 1
-                        }
+                    objectVersion: 5
+                },
+                event: {
+                    push: {
+                        favoriteSongs: 'Strawberry Fields'
+                    },
+                    increment: {
+                        songsHeard: 1
                     }
                 }
             }));

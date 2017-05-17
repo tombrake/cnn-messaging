@@ -3,11 +3,11 @@
 const Messenger = require('./lib/messenger');
 const Message = require('./lib/message');
 const AmqpMessenger = require('./lib/amqp');
-const SocketIORelay = require('./lib/socket.io');
+const WebsocketRelay = require('./lib/websocket');
 
 module.exports = {
     Messenger,
     Message,
     AmqpMessenger,
-    SocketIORelay
+    WebsocketRelay
 };
