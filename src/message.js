@@ -1,20 +1,8 @@
-'use strict';
+// @flow
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _v = require('uuid/v1');
-
-var _v2 = _interopRequireDefault(_v);
-
-var _debug = require('debug');
-
-var _debug2 = _interopRequireDefault(_debug);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const debug = (0, _debug2.default)('cnn-messaging:message');
+import uuidV1 from 'uuid/v1';
+import Debug from 'debug';
+const debug = Debug('cnn-messaging:message');
 
 const defaults = {
     systemId: 'unknownSystemId',
@@ -24,27 +12,57 @@ const defaults = {
     action: 'unknownAction'
 };
 
+type MessageData = {
+    id?: string,
+    timestamp?: string,
+    context: {
+        systemId: string,
+        environment: string,
+        model: string,
+        objectId: string | number,
+        action: string,
+        objectVersion: string | number,
+        requestId?: string,
+        userId?: string
+    },
+    event?: any
+}
+
 /**
 A Message object
 */
-class Message {
+export default class Message {
+    id: string;
+    timestamp: string;
+    context: {
+        systemId: string;
+        environment: string;
+        model: string;
+        objectId: string | number;
+        action: string;
+        objectVersion: string | number;
+        requestId?: string;
+        userId?: string;
+    };
+    event: any;
+    meta: any;
 
     /**
     create a new instance of Message
     */
-    constructor(message) {
+    constructor(message: MessageData) {
         debug('new message', message);
-        message = message || { context: {} };
+        message = message || {context: {}};
         this.context = message.context;
         this.event = message.event;
-        this.id = message.id || (0, _v2.default)();
-        this.timestamp = message.timestamp || new Date().toISOString();
+        this.id = (message.id || uuidV1());
+        this.timestamp = (message.timestamp || (new Date()).toISOString());
     }
 
     /**
     Stringify the message
     */
-    toString() {
+    toString(): string {
         const shadow = {
             id: this.id,
             timestamp: this.timestamp,
@@ -57,35 +75,35 @@ class Message {
     /**
     Convert the message for websocket delivery
     */
-    toWS() {
+    toWS(): string {
         return this.toString();
     }
 
     /**
     Convert the message for amqp delivery
     */
-    toAmqp() {
+    toAmqp(): Buffer {
         return Buffer.from(this.toString());
     }
 
     /**
     Get the preferred topic name from the message context
     */
-    getTopic() {
+    getTopic(): string {
         const topic = [];
         const context = this.context || {};
-        topic.push(context.systemId || defaults['systemId']);
-        topic.push(context.environment || defaults['environment']);
-        topic.push(context.model || defaults['model']);
-        topic.push(context.objectId || defaults['objectId']);
-        topic.push(context.action || defaults['action']);
+        topic.push((context.systemId || defaults['systemId']));
+        topic.push((context.environment || defaults['environment']));
+        topic.push((context.model || defaults['model']));
+        topic.push((context.objectId || defaults['objectId']));
+        topic.push((context.action || defaults['action']));
         return topic.join('.');
     }
 
     /**
     Ack a work message (mark it as completed)
     */
-    ack() {
+    ack(): void {
         if (this.meta && this.meta.rawMessage && this.meta.channel) {
             debug('Ack message', this.meta.rawMessage);
             this.meta.channel.ack(this.meta.rawMessage);
@@ -95,7 +113,7 @@ class Message {
     /**
     Nack a work message (mark it as failed, for redelivery)
     */
-    nack() {
+    nack(): void {
         if (this.meta && this.meta.rawMessage && this.meta.channel) {
             debug('Nack message', this.meta.rawMessage);
             this.meta.channel.nack(this.meta.rawMessage);
@@ -105,7 +123,7 @@ class Message {
     /**
     Convert a raw amqp message into an instance of Message
     */
-    static fromAmqp(rawMessage, channel) {
+    static fromAmqp(rawMessage, channel): Message {
         debug(`from amqp: ${JSON.stringify(rawMessage)}`);
         const messageString = rawMessage.content.toString();
         const messageObject = JSON.parse(messageString);
@@ -117,5 +135,3 @@ class Message {
         return message;
     }
 }
-exports.default = Message;
-module.exports = exports['default'];

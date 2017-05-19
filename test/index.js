@@ -66,11 +66,11 @@ describe('Basic Functionality', function () {
             });
     });
     it('should publish instance of Message', function () {
-        const publisher = Messenger(amqpTestConfig);
+        const publisher = new Messenger(amqpTestConfig);
         return publisher.publish('test.message', new Message());
     });
     it('should not publish otherwise', function () {
-        const publisher = Messenger(amqpTestConfig);
+        const publisher = new Messenger(amqpTestConfig);
         return publisher.publish('test.message', 'blah')
             .then(() => {
                 return Promise.reject(new Error('This should fail'));
@@ -80,9 +80,17 @@ describe('Basic Functionality', function () {
     });
 });
 
+describe('Message', function () {
+    it('should provide a getTopic method', function () {
+        const msg = new Message({event: {blah: 1}});
+        const topic = msg.getTopic();
+        topic.should.exist;
+    });
+});
+
 describe('AmqpMessenger', function () {
     it('should start and stop', function () {
-        const messenger = AmqpMessenger(amqpTestConfig);
+        const messenger = new AmqpMessenger(amqpTestConfig);
         return messenger.start()
             .then(() => {
                 return messenger.stop();
@@ -90,9 +98,9 @@ describe('AmqpMessenger', function () {
     });
 
     it('multiple notification subscribers should get a notification', function () {
-        const publisher = AmqpMessenger(amqpTestConfig);
-        const subscriber1 = AmqpMessenger(amqpTestConfig);
-        const subscriber2 = AmqpMessenger(amqpTestConfig);
+        const publisher = new AmqpMessenger(amqpTestConfig);
+        const subscriber1 = new AmqpMessenger(amqpTestConfig);
+        const subscriber2 = new AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -110,7 +118,7 @@ describe('AmqpMessenger', function () {
                         text: 'test'
                     }
                 };
-                return publisher.publish('test.message', Message(message));
+                return publisher.publish('test.message', new Message(message));
             })
             .then(() => {
                 let messageCount = 0;
@@ -136,9 +144,9 @@ describe('AmqpMessenger', function () {
     });
 
     it('only a single work subscriber should get work', function () {
-        const publisher = AmqpMessenger(amqpTestConfig);
-        const subscriber1 = AmqpMessenger(amqpTestConfig);
-        const subscriber2 = AmqpMessenger(amqpTestConfig);
+        const publisher = new AmqpMessenger(amqpTestConfig);
+        const subscriber1 = new AmqpMessenger(amqpTestConfig);
+        const subscriber2 = new AmqpMessenger(amqpTestConfig);
         let observable1;
         let observable2;
         return Promise.all([publisher.start(), subscriber1.start(), subscriber2.start()])
@@ -156,7 +164,7 @@ describe('AmqpMessenger', function () {
                         text: 'test'
                     }
                 };
-                return publisher.publish('work.message', Message(message));
+                return publisher.publish('work.message', new Message(message));
             })
             .then(() => {
                 let messageCount = 0;
@@ -262,6 +270,38 @@ describe('WebsocketRelay', function () {
             });
             ws.on('message', () => {
                 ws.close();
+                resolve();
+            });
+        });
+    });
+
+    it('should ignore unknown messages', function () {
+        return new Promise((resolve, reject) => {
+            const WebSocket = require('uws');
+            const ws = new WebSocket('ws://localhost:13000/', {
+                perMessageDeflate: false
+            });
+            ws.on('open', () => {
+                ws.send(JSON.stringify({action: 'blah', topic: 'test.message2.*'}));
+            });
+            setTimeout(() => {
+                resolve();
+            }, 1000);
+            ws.on('message', () => {
+                ws.close();
+                reject();
+            });
+        });
+    });
+
+    it('should send ping messages', function () {
+        return new Promise((resolve) => {
+            const WebSocket = require('uws');
+            const ws = new WebSocket('ws://localhost:13000/', {
+                perMessageDeflate: false
+            });
+
+            ws.on('ping', () => {
                 resolve();
             });
         });

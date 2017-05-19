@@ -1,40 +1,31 @@
-'use strict';
+// @flow
 
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-
-var _uws = require('uws');
-
-var _uws2 = _interopRequireDefault(_uws);
-
-var _messenger = require('./messenger');
-
-var _messenger2 = _interopRequireDefault(_messenger);
-
-var _debug = require('debug');
-
-var _debug2 = _interopRequireDefault(_debug);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-const debug = (0, _debug2.default)('cnn-messaging:messenger:websocket');
+import WebSocket from 'uws';
+import Messenger from './messenger';
+import Debug from 'debug';
+const debug = Debug('cnn-messaging:messenger:websocket');
 
 /**
 A performant websocket relay for messenger
 */
-
-
-class WebsocketRelay {
+export default class WebsocketRelay {
+    io: WebSocket.Server;
+    messenger: Messenger;
+    connectionCount: number;
+    connections: number;
+    observables: Object;
+    subscriptions: Object;
+    pingInterval: number;
+    pingService: number;
     /**
     create a new instance of websocket relay
     */
-    constructor(params) {
+    constructor(params: {messenger: Messenger, port: number, pingInterval: number}) {
         params = params || {};
         if (!params.messenger || !params.port) {
             throw new Error('You must provide an instance of a messenger and a port for web socket server');
         }
-        this.io = new _uws2.default.Server({
+        this.io = new WebSocket.Server({
             perMessageDeflate: false,
             port: params.port
         });
@@ -46,7 +37,7 @@ class WebsocketRelay {
         this.subscriptions = {};
         this.pingInterval = params.pingInterval;
 
-        this.io.on('connection', socket => {
+        this.io.on('connection', (socket) => {
             this.handleSocketConnection(socket);
         });
 
@@ -57,8 +48,8 @@ class WebsocketRelay {
         this.pingService.unref(); // allows graceful shutdown
     }
 
-    sendPing() {
-        this.io.clients.forEach(ws => {
+    sendPing(): void {
+        this.io.clients.forEach((ws) => {
             if (ws.isAlive === false) {
                 return ws.terminate();
             }
@@ -68,7 +59,7 @@ class WebsocketRelay {
         });
     }
 
-    handleSocketConnection(socket) {
+    handleSocketConnection(socket: Object): void {
         this.connectionCount++;
         this.connections++;
 
@@ -80,7 +71,7 @@ class WebsocketRelay {
             socket.isAlive = true;
         });
 
-        socket.on('message', msg => {
+        socket.on('message', (msg) => {
             this.handleSocketMessage(socket, msg);
         });
 
@@ -89,7 +80,7 @@ class WebsocketRelay {
         });
     }
 
-    handleSocketMessage(socket, msg) {
+    handleSocketMessage(socket: Object, msg: string): void {
         let request;
         try {
             request = JSON.parse(msg);
@@ -110,18 +101,19 @@ class WebsocketRelay {
         }
     }
 
-    subscribe(topic, socket) {
+    subscribe(topic: string, socket: Object): void {
         debug(`got subscribe request for ${topic}`);
         if (!this.observables[topic]) {
-            this.messenger.createNotificationObservable(topic).then(o => {
-                this.observables[topic] = o.subscribe(message => {
-                    this.sendToTopic(topic, message.toWS());
-                }, err => {
-                    debug(err);
-                }, () => {
-                    debug('observable ended');
+            this.messenger.createNotificationObservable(topic)
+                .then((o) => {
+                    this.observables[topic] = o.subscribe((message) => {
+                        this.sendToTopic(topic, message.toWS());
+                    }, (err) => {
+                        debug(err);
+                    }, () => {
+                        debug('observable ended');
+                    });
                 });
-            });
         }
         if (!this.subscriptions[topic]) {
             this.subscriptions[topic] = {};
@@ -129,7 +121,7 @@ class WebsocketRelay {
         this.subscriptions[topic][socket.id] = socket;
     }
 
-    unsubscribe(topic, socketId) {
+    unsubscribe(topic: string, socketId: string): void {
         if (this.subscriptions[topic][socketId]) {
             delete this.subscriptions[topic][socketId];
             if (!Object.keys(this.subscriptions[topic]).length) {
@@ -143,21 +135,19 @@ class WebsocketRelay {
         }
     }
 
-    handleSocketClose(socket) {
+    handleSocketClose(socket: Object): void {
         this.connections--;
         debug(`socket ${socket.id} disconnected`);
-        Object.keys(this.subscriptions).forEach(topic => {
+        Object.keys(this.subscriptions).forEach((topic) => {
             this.unsubscribe(topic, socket.id);
         });
     }
 
-    sendToTopic(topic, msg) {
-        Object.keys(this.subscriptions[topic]).forEach(socketId => {
+    sendToTopic(topic: string, msg: string): void {
+        Object.keys(this.subscriptions[topic]).forEach((socketId) => {
             const socket = this.subscriptions[topic][socketId];
             debug('sending to websocket', socketId, topic, msg);
             socket.send(msg);
         });
     }
 }
-exports.default = WebsocketRelay;
-module.exports = exports['default'];

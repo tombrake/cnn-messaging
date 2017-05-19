@@ -1,0 +1,8 @@
+[ignore]
+.*/node_modules/stylelint.*
+.*/node_modules/documentation.*
+[include]
+
+[libs]
+
+[options]
