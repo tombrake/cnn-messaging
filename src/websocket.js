@@ -20,15 +20,24 @@ export default class WebsocketRelay {
     /**
     create a new instance of websocket relay
     */
-    constructor(params: {messenger: Messenger, port: number, pingInterval: number}) {
+    constructor(params: {messenger: Messenger, port?: number, http?: any, pingInterval: number}) {
         params = params || {};
-        if (!params.messenger || !params.port) {
+        if (!params.messenger || (!params.port && !params.http)) {
             throw new Error('You must provide an instance of a messenger and a port for web socket server');
         }
-        this.io = new WebSocket.Server({
-            perMessageDeflate: false,
-            port: params.port
-        });
+        if (params.port) {
+            this.io = new WebSocket.Server({
+                perMessageDeflate: false,
+                port: params.port
+            });
+        }
+        if (params.http) {
+            this.io = new WebSocket.Server({
+                perMessageDeflate: false,
+                server: params.http
+            });
+        }
+
         this.messenger = params.messenger;
         this.messenger.websocketRelay = this;
         this.connectionCount = 0;

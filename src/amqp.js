@@ -29,7 +29,8 @@ export default class AmqpMessenger extends Messenger {
             connectionString: string;
             exchangeName: string;
         };
-        port: number;
+        port?: number;
+        http?: any;
     }) {
         super(params);
         this.params = params.amqp;

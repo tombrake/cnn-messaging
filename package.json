@@ -1,6 +1,6 @@
 {
   "name": "cnn-messaging",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A module for message publishing and subscription",
   "main": "index.js",
   "scripts": {
@@ -19,7 +19,14 @@
   "keywords": [
     "cnn",
     "messaging",
-    "events"
+    "events",
+    "amqp",
+    "rxjs",
+    "pubsub",
+    "work",
+    "queue",
+    "websocket",
+    "uws"
   ],
   "author": "Ian Patton <ian.patton@turner.com>",
   "license": "Apache-2.0",

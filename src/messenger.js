@@ -26,7 +26,7 @@ export default class Messenger extends events.EventEmitter {
     /**
     Create a new messenger instance
     */
-    constructor(params: {port: number}) {
+    constructor(params: {port?: number, http?: any}) {
         super();
         params = params || {};
         this.states = [
@@ -50,6 +50,15 @@ export default class Messenger extends events.EventEmitter {
             debug('got port, creating websocket relay with ping interval', interval);
             this.websocketRelay = new WebsocketRelay({
                 port: params.port,
+                messenger: this,
+                pingInterval: interval
+            });
+        }
+        if (params.http) {
+            const interval = (process.env.PINGINTERVAL && parseInt(process.env.PINGINTERVAL)) || 30000;
+            debug('got http server, creating websocket relay with ping interval', interval);
+            this.websocketRelay = new WebsocketRelay({
+                http: params.http,
                 messenger: this,
                 pingInterval: interval
             });

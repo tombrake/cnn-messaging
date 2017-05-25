@@ -1,5 +1,5 @@
-// flow-typed signature: bad3c03afed474d4fb576a7afe069701
-// flow-typed version: 731a6ee6c3/chai_v3.5.x/flow_>=v0.24.0
+// flow-typed signature: 61dbd6c957b7da58b7b699d134e15108
+// flow-typed version: 62398ff851/chai_v3.5.x/flow_>=v0.24.0
 
 declare module "chai" {
 
@@ -83,6 +83,10 @@ declare module "chai" {
         undefined: () => ExpectChain<T>,
         exist: () => ExpectChain<T>,
         empty: () => ExpectChain<T>,
+
+        extensible: () => ExpectChain<T>,
+        sealed: () => ExpectChain<T>,
+        frozen: () => ExpectChain<T>,
 
         // chai-immutable
         size: (n: number) => ExpectChain<T>,
