@@ -19,7 +19,7 @@ USER app
 WORKDIR $APP
 
 # Install app dependencies
-RUN npm install --only=production && npm cache clean
+RUN npm install && npm cache clean
 
 # Copy the app source files
 USER root
