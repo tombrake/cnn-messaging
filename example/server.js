@@ -4,18 +4,18 @@ const app = require('http').createServer(handler);
 const fs = require('fs');
 const uuidV1 = require('uuid/v1');
 const Message = require('../index').Message;
-const messenger = require('../index').AmqpMessenger({
+const Messenger = require('../index').AmqpMessenger;
+const messenger = new Messenger({
     amqp: {
         connectionString: 'amqp://localhost:5672',
         exchangeName: 'EXAMPLE_APP'
     },
-    port: process.env.WSPORT || 3001
+    http: app
 });
 
 messenger.start()
     .then(() => {
         console.log(`Starting http on port ${process.env.PORT || 3000}`);
-        console.log(`Starting ws on port ${process.env.WSPORT || 3001}`);
         app.listen(process.env.PORT || 3000);
     });
 

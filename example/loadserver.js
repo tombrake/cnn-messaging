@@ -2,6 +2,7 @@
 
 const http = require('http');
 const express = require('express');
+const metrics = require('cnn-metrics');
 const app = express();
 
 app.use(function (req, res, next) {
@@ -25,12 +26,23 @@ const amqpMessenger = require('../index').AmqpMessenger({
     http: server
 });
 
+metrics.init({
+    appName: 'cnn-messaging-loadtest',
+    appType: 'api',  // or 'fe'
+    customer: 'cnn',
+    flushEvery: 1000 * 2
+});
+
 amqpMessenger.start()
     .then(() => {
         server.listen(process.env.PORT || 13000, function listening() {
             console.log('Listening on %d', server.address().port);
         });
     });
+
+setInterval(() => {
+    metrics.histogram('wsconns', amqpMessenger.websocketRelay.connections);
+});
 
 setInterval(() => {
     amqpMessenger.publish('test.message.new', new Message({

@@ -53,7 +53,8 @@ Messages are delivered all subscribed instances.
 
 ```
 const topic = 'some.topic.name';
-const messenger = require('cnn-messaging').AmqpMessenger(config);
+const Messenger = require('cnn-messaging').AmqpMessenger;
+const messenger = new Messenger(config);
 
 messenger.start()
   .then(() => {
@@ -81,7 +82,8 @@ Messages are delivered to only 1 of many subscribed instances, and must be ack'd
 
 ```
 const topic = 'some.topic.name';
-const messenger = require('cnn-messaging').AmqpMessenger(config);
+const Messenger = require('cnn-messaging').AmqpMessenger;
+const messenger = new Messenger(config);
 
 messenger.start()
   .then(() => {
@@ -110,15 +112,19 @@ messenger.start()
 If you provide a port as a parameter to the Messenger, then it will enable a websocket relay.
 
 ```
-const messenger = require('../index').AmqpMessenger({
+const Messenger = require('cnn-messaging').AmqpMessenger;
+const messenger = new Messenger({
     amqp: {
         connectionString: 'amqp://localhost:5672',
         exchangeName: 'EXAMPLE_APP'
     },
-    port: 3000
+    http: httpServerInstance // this can be http, express, hapi, etc
 });
 
-return messenger.start();
+return messenger.start()
+    .then(() => {
+        httpServer.listen(3000);
+    });
 ```
 
 ### Example App
