@@ -153,10 +153,12 @@ export default class WebsocketRelay {
     }
 
     sendToTopic(topic: string, msg: string): void {
-        Object.keys(this.subscriptions[topic]).forEach((socketId) => {
-            const socket = this.subscriptions[topic][socketId];
-            debug('sending to websocket', socketId, topic, msg);
-            socket.send(msg);
-        });
+        if (this.subscriptions[topic]) {
+            Object.keys(this.subscriptions[topic]).forEach((socketId) => {
+                const socket = this.subscriptions[topic][socketId];
+                debug('sending to websocket', socketId, topic, msg);
+                socket.send(msg);
+            });
+        }
     }
 }
