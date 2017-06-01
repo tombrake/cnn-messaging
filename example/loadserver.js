@@ -45,15 +45,17 @@ setInterval(() => {
     metrics.histogram('wsconns', messenger.websocketRelay.connections);
 });
 
-setInterval(() => {
-    messenger.publish('test.message.new', new Message({
-        event: {
-            some: {
-                thing: Math.random()
+if (process.env.RUNPUBLISHER) {
+    setInterval(() => {
+        messenger.publish('test.message.new', new Message({
+            event: {
+                some: {
+                    thing: Math.random()
+                }
             }
-        }
-    }));
-}, (process.env.INTERVAL && parseInt(process.env.INTERVAL)) || 30000);
+        }));
+    }, (process.env.INTERVAL && parseInt(process.env.INTERVAL)) || 30000);
+}
 
 setInterval(() => {
     const subscribedTopics = Object.keys(messenger.websocketRelay.subscriptions);
