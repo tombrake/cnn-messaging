@@ -1,5 +1,6 @@
 // @flow
 
+import events from 'events';
 import WebSocket from 'uws';
 import Messenger from './messenger';
 import Debug from 'debug';
@@ -8,7 +9,7 @@ const debug = Debug('cnn-messaging:messenger:websocket');
 /**
 A performant websocket relay for messenger
 */
-export default class WebsocketRelay {
+export default class WebsocketRelay extends events.EventEmitter {
     io: WebSocket.Server;
     messenger: Messenger;
     connectionCount: number;
@@ -21,6 +22,7 @@ export default class WebsocketRelay {
     create a new instance of websocket relay
     */
     constructor(params: {messenger: Messenger, port?: number, http?: any, pingInterval: number}) {
+        super();
         params = params || {};
         if (!params.messenger || (!params.port && !params.http)) {
             throw new Error('You must provide an instance of a messenger and a port for web socket server');
@@ -58,6 +60,7 @@ export default class WebsocketRelay {
     }
 
     sendPing(): void {
+        const startTime = new Date();
         this.io.clients.forEach((ws) => {
             if (ws.isAlive === false) {
                 return ws.terminate();
@@ -65,6 +68,11 @@ export default class WebsocketRelay {
 
             ws.isAlive = false;
             ws.ping('', false, true);
+        });
+        const endTime = new Date();
+        this.emit('pingComplete', {
+            connections: this.connections,
+            duration: endTime - startTime
         });
     }
 
@@ -116,7 +124,7 @@ export default class WebsocketRelay {
             this.messenger.createNotificationObservable(topic)
                 .then((o) => {
                     this.observables[topic] = o.subscribe((message) => {
-                        this.sendToTopic(topic, message.toWS());
+                        this.relay(topic, message.toWS());
                     }, (err) => {
                         debug(err);
                     }, () => {
@@ -152,13 +160,22 @@ export default class WebsocketRelay {
         });
     }
 
-    sendToTopic(topic: string, msg: string): void {
+    relay(topic: string, msg: string): void {
+        const startTime = new Date();
+        let subscribers = 0;
         if (this.subscriptions[topic]) {
             Object.keys(this.subscriptions[topic]).forEach((socketId) => {
                 const socket = this.subscriptions[topic][socketId];
                 debug('sending to websocket', socketId, topic, msg);
                 socket.send(msg);
+                subscribers++;
             });
         }
+        const endTime = new Date();
+        this.emit('relayComplete', {
+            topic,
+            subscribers,
+            duration: endTime - startTime
+        });
     }
 }

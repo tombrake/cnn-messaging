@@ -45,6 +45,17 @@ setInterval(() => {
     metrics.histogram('wsconns', messenger.websocketRelay.connections);
 });
 
+messenger.websocketRelay.on('relayComplete', (evt) => {
+    metrics.histogram('wsRelayDuration', evt.duration);
+    console.log(`Relayed message on ${evt.topic} to ${evt.subscribers} sockets, duration ${evt.duration}ms`);
+
+});
+
+messenger.websocketRelay.on('pingComplete', (evt) => {
+    metrics.histogram('pingDuration', evt.duration);
+    console.log(`Sent ping to all connected sockets, duration ${evt.duration}ms`);
+});
+
 if (process.env.RUNPUBLISHER) {
     setInterval(() => {
         messenger.publish('test.message.new', new Message({
