@@ -83,7 +83,7 @@ export default class Message {
     Convert the message for amqp delivery
     */
     toAmqp(): Buffer {
-        return Buffer.from(this.toString());
+        return new Buffer(this.toString());
     }
 
     /**
