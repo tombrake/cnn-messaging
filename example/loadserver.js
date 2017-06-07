@@ -31,7 +31,7 @@ metrics.init({
     appName: 'cnn-messaging-loadtest',
     appType: 'api',  // or 'fe'
     customer: 'cnn',
-    flushEvery: 1000 * 2
+    flushEvery: 1000 * 60
 });
 
 messenger.start()

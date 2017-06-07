@@ -127,6 +127,8 @@ describe('AmqpMessenger', function () {
                         (message.event.text).should.equal('test');
                         messageCount++;
                         if (messageCount == 2) {
+                            sub1.unsubscribe();
+                            sub2.unsubscribe();
                             resolve();
                         }
                     }, reject, resolve);
@@ -140,6 +142,30 @@ describe('AmqpMessenger', function () {
                         }
                     }, reject, resolve);
                 });
+            });
+    });
+
+    it('should cleanup queues correctly on unsubscribe', function () {
+        const subscriber1 = new AmqpMessenger(amqpTestConfig);
+        return subscriber1.start()
+            .then(() => {
+                return subscriber1.createNotificationObservable('test.*');
+            })
+            .then((o) => {
+                (subscriber1.observables.notification['test.*']).should.exist;
+                return o.subscribe();
+            })
+            .then((sub) => {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        sub.unsubscribe();
+                        resolve();
+                    }, 1000);
+                });
+            })
+            .then(() => {
+                (subscriber1.observables.notification['test.*'] === undefined).should.be.true;
+                return Promise.resolve();
             });
     });
 

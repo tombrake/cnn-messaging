@@ -128,7 +128,7 @@ export default class AmqpMessenger extends Messenger {
             };
             noAck = false;
         }
-        debug('using', type, 'params', queueparams, 'noAck', noAck);
+        debug('creating', type, 'queue with params:', queueparams, 'noAck:', noAck);
         const q = await this.channel[type].assertQueue(queue, queueparams);
         this.subscriptions[type][topic] = q.queue;
         await this.channel[type].bindQueue(q.queue, this.params.exchangeName, topic);
@@ -145,13 +145,20 @@ export default class AmqpMessenger extends Messenger {
 
             // return the function that handles unsubscribe here
             return () => {
-                debug(`stop consuming from ${topic}`);
+                debug(`stop ${type} subscription to ${topic}, queue: ${this.subscriptions[type][topic]}`);
                 if (type !== 'work') {
                     // unbind the queue from the topic to stop routing at the amqp server
                     this.channel[type].unbindQueue(this.subscriptions[type][topic], this.params.exchangeName, topic);
+                    debug(`unbound queue ${this.subscriptions[type][topic]} to topic ${topic}`);
                 }
+                // stop consuming from the queue
                 this.channel[type].cancel(consTag);
                 debug(`stopped receiving new ${type} messages from ${topic}`);
+                if (type !== 'work') {
+                    // delete queue
+                    debug(`deleting queue ${this.subscriptions[type][topic]}`);
+                    this.channel[type].deleteQueue(this.subscriptions[type][topic]);
+                }
                 delete this.subscriptions[type][topic];
                 delete this.observables[type][topic];
             };

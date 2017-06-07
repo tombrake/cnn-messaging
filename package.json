@@ -1,6 +1,6 @@
 {
   "name": "cnn-messaging",
-  "version": "2.1.9",
+  "version": "2.1.10",
   "description": "A module for message publishing and subscription",
   "main": "index.js",
   "scripts": {
