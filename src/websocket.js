@@ -1,10 +1,19 @@
 // @flow
 
 import events from 'events';
-import WebSocket from 'uws';
 import Messenger from './messenger';
 import Debug from 'debug';
 const debug = Debug('cnn-messaging:messenger:websocket');
+
+let WebSocket;
+let uwsEnabled = false;
+
+try {
+    WebSocket = require('uws');
+    uwsEnabled = true;
+} catch (e) {
+    debug(`uws module not available. ${e}. Disabling...`);
+}
 
 /**
 A performant websocket relay for messenger
@@ -27,13 +36,13 @@ export default class WebsocketRelay extends events.EventEmitter {
         if (!params.messenger || (!params.port && !params.http)) {
             throw new Error('You must provide an instance of a messenger and a port for web socket server');
         }
-        if (params.port) {
+        if (params.port && uwsEnabled) {
             this.io = new WebSocket.Server({
                 perMessageDeflate: false,
                 port: params.port
             });
         }
-        if (params.http) {
+        if (params.http && uwsEnabled) {
             this.io = new WebSocket.Server({
                 perMessageDeflate: false,
                 server: params.http
@@ -48,7 +57,7 @@ export default class WebsocketRelay extends events.EventEmitter {
         this.subscriptions = {};
         this.pingInterval = params.pingInterval;
 
-        this.io.on('connection', (socket) => {
+        this.io && this.io.on('connection', (socket) => {
             this.handleSocketConnection(socket);
         });
 
@@ -61,7 +70,7 @@ export default class WebsocketRelay extends events.EventEmitter {
 
     sendPing(): void {
         const startTime = new Date();
-        this.io.clients.forEach((ws) => {
+        this.io && this.io.clients.forEach((ws) => {
             if (ws.isAlive === false) {
                 return ws.terminate();
             }

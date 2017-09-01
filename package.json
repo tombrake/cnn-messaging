@@ -1,6 +1,6 @@
 {
   "name": "cnn-messaging",
-  "version": "2.1.10",
+  "version": "2.2.0",
   "description": "A module for message publishing and subscription",
   "main": "index.js",
   "scripts": {
@@ -49,13 +49,15 @@
     "sinon": "^2.1.0"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=8.4.0"
   },
   "dependencies": {
     "amqplib": "^0.5.1",
     "debug": "^2.6.3",
     "rxjs": "^5.3.0",
-    "uuid": "^3.0.1",
+    "uuid": "^3.0.1"
+  },
+  "optionalDependencies": {
     "uws": "^0.14.5"
   },
   "directories": {

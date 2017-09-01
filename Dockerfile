@@ -1,4 +1,4 @@
-FROM node:7.8.0
+FROM node:8.4.0
 
 # Build environment variables
 ENV APP_PATH=/home/app
@@ -19,7 +19,7 @@ USER app
 WORKDIR $APP
 
 # Install app dependencies
-RUN npm install && npm cache clean
+RUN npm install
 
 # Copy the app source files
 USER root

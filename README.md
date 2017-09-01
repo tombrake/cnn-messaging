@@ -111,6 +111,8 @@ messenger.start()
 
 If you provide a port as a parameter to the Messenger, then it will enable a websocket relay.
 
+Note: This functionality requires the optional uws module to be installed.
+
 ```
 const Messenger = require('cnn-messaging').AmqpMessenger;
 const messenger = new Messenger({
