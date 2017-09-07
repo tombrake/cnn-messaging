@@ -4,3 +4,4 @@ node_modules
 *.csr
 *.log
 flow-typed/
+lib/
