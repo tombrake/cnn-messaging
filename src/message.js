@@ -4,12 +4,23 @@ import uuidV1 from 'uuid/v1';
 import Debug from 'debug';
 const debug = Debug('cnn-messaging:message');
 
+// allowed actions
+const actions = ['create', 'update', 'delete', 'upsert', 'event'];
+
+// map older actions to allowed actions
+const actionsMap = {
+    new: 'create',
+    insert: 'create',
+    remove: 'delete',
+    change: 'update'
+};
+
 const defaults = {
     systemId: 'unknownSystemId',
     environment: 'unknownEnvironment',
     model: 'unknownModel',
     objectId: 'unknownObjectId',
-    action: 'unknownAction'
+    action: 'event'
 };
 
 type MessageData = {
@@ -21,7 +32,7 @@ type MessageData = {
         model: string,
         objectId: string | number,
         action: string,
-        objectVersion: string | number,
+        objectVersion?: string | number,
         requestId?: string,
         userId?: string
     },
@@ -40,7 +51,7 @@ export default class Message {
         model: string;
         objectId: string | number;
         action: string;
-        objectVersion: string | number;
+        objectVersion?: string | number;
         requestId?: string;
         userId?: string;
     };
@@ -52,8 +63,15 @@ export default class Message {
     */
     constructor(message: MessageData) {
         debug('new message', message);
-        message = message || {context: {}};
+        message = message || {};
+        message.context = message.context || defaults;
         this.context = message.context;
+        if (actions.indexOf(this.context.action) < 0 && actionsMap[this.context.action]) {
+            this.context.action = actionsMap[this.context.action];
+        }
+        if (!this.context.action || actions.indexOf(this.context.action) < 0) {
+            throw new Error(`Message context has invalid action: ${this.context.action}`);
+        }
         this.event = message.event;
         this.id = (message.id || uuidV1());
         this.timestamp = (message.timestamp || (new Date()).toISOString());

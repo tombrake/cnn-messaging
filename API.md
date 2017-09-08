@@ -37,7 +37,7 @@ A messenger that can use amqp topic exchanges and queues
 
 **Parameters**
 
--   `params` **{amqp: {connectionString: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), exchangeName: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)}, port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{amqp: {connectionString: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), exchangeName: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)}, port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
 
 ### constructor
 
@@ -45,7 +45,7 @@ Create a new amqp messenger instance
 
 **Parameters**
 
--   `params` **{amqp: {connectionString: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), exchangeName: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)}, port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{amqp: {connectionString: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), exchangeName: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)}, port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
 
 ### start
 
@@ -65,8 +65,8 @@ publish a message to a topic
 
 **Parameters**
 
--   `topic` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `message` **[Message](#message)** 
+-   `topicOrMessage` **any** 
+-   `messageOnly` **[Message](#message)** 
 
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;any>** 
 
@@ -174,7 +174,7 @@ An in-memory messenger, providing pub/sub like features
 
 **Parameters**
 
--   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
 
 ### constructor
 
@@ -182,7 +182,7 @@ Create a new messenger instance
 
 **Parameters**
 
--   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
 
 ### start
 
@@ -202,8 +202,8 @@ publish a message to a topic
 
 **Parameters**
 
--   `topic` **[string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)** 
--   `message` **[Message](#message)** 
+-   `topicOrMessage` **any** 
+-   `messageOnly` **[Message](#message)** 
 
 Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise)&lt;any>** 
 
@@ -230,11 +230,13 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 
 ## WebsocketRelay
 
+**Extends events.EventEmitter**
+
 A performant websocket relay for messenger
 
 **Parameters**
 
--   `params` **{messenger: [Messenger](#messenger), port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number), pingInterval: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{messenger: [Messenger](#messenger), port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?, pingInterval: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
 
 ### constructor
 
@@ -242,4 +244,4 @@ create a new instance of websocket relay
 
 **Parameters**
 
--   `params` **{messenger: [Messenger](#messenger), port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number), pingInterval: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
+-   `params` **{messenger: [Messenger](#messenger), port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?, pingInterval: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 

@@ -18,7 +18,17 @@ To run the tests, use ```docker-compose up -d``` to start the dependancies.
 npm install --save cnn-messaging
 ```
 
-### AmqpMessenger API
+### Debugging
+
+This module uses the [debug module](https://www.npmjs.com/package/debug). Add the environment variable DEBUG=* to enable debug logging in any app using this module.
+
+### New in 3.0.0
+
+* The publish method now supports a shorter signature. Publish no longer requires a topic name. The topic name can be derived from the message. Therefore, the API now allows simply messenger.publish(message). The older style messenger.publish(topic, message) is still supported, but should be considered deprecated.
+* For messages sent using the new publish signature, the CRUD actions (the last part of the topic name) are now limited to the following options: ['create', 'update', 'delete', 'upsert', 'event'].
+* In an effort to normalize the CRUD actions, _the following action mappings will take place automatically:_ [new: 'create', insert: 'create', remove: 'delete', change: 'update'].
+
+### Messenger API
 
 * ```start()```: This will perform any asynchronous initialization required for the service.
 * ```stop()```: This will perform any asynchronous steps for disconnecting and shutting down gracefully.
@@ -26,39 +36,51 @@ npm install --save cnn-messaging
 * ```createNotificationObservable(topic)```: This binds a private queue to a topic. This means that all nodes in a cluster get notifications to their private queue. Returns an Observable.
 * ```createWorkObservable(topic, queue)```: This binds a named, shared queue to a topic so that messages are distributed to only one node in a cluster. __These types of messages require an 'ack'__, to acknowledge that they have been processed successfully. Returns an Observable.
 
+See the [API Documentation](https://github.com/cnnlabs/cnn-messaging/blob/master/API.md) file for more specific documentation
+
 ### About Observables
 
 The observables returned from the methods above are the RxJs 5 implementation of ES7 Observables.
 
 Observables provide advanced features for event streams, such as filtering, batching, debouncing, etc. Read more about RxJs [here](http://reactivex.io) and [here](https://github.com/ReactiveX/rxjs).
 
-### Publishing messages
+### Publishing messages to RabbitMQ
 
 ```
-const topic = 'some.topic.name';
 const messenger = require('cnn-messaging').AmqpMessenger(config);
 const Message = require('cnn-messaging').Message;
 
 messenger.start()
   .then(() => {
-    const message = new Message({event: {some: 'thing'}}));
-    messenger.publish(topic, message);      
-  })
+    const message = new Message({
+        context: {
+            systemId: mySystemName,
+            environment: myEnvironmentName,
+            model: myModelName,
+            objectId: 1234567890,
+            action: insert
+        },
+        event: { // can be any object
+            some: 'thing'
+        }
+    });
+    messenger.publish(message);      
+  });
 
 ```
 
-### Subscribing to notifications
+### Subscribing to notifications from RabbitMQ
 
 Messages are delivered all subscribed instances.
 
 ```
-const topic = 'some.topic.name';
+const topic = 'mySystemName.myEnvironmentName.myModelName.*.*';
 const Messenger = require('cnn-messaging').AmqpMessenger;
 const messenger = new Messenger(config);
 
 messenger.start()
   .then(() => {
-    return messenger.createNotificationObservable('notification.*');    
+    return messenger.createNotificationObservable(topic);    
   })
   .then((observable) => {
       observable.subscribe(
@@ -76,18 +98,20 @@ messenger.start()
 
 ```
 
-### Subscribing to work
+### Subscribing to work from RabbitMQ
 
 Messages are delivered to only 1 of many subscribed instances, and must be ack'd or nack'd to get the next message.
 
+Caution: Unlike notification queues, binding a work queue to a topic is not undone automatically when you unsubscribe. Work queues remain bound to topics after a restart, etc. The nature of shared work queues requires this. If you are seeing unexpected messages, check your queue bindings!
+
 ```
-const topic = 'some.topic.name';
+const topic = 'mySystemName.myEnvironmentName.myModelName.*.*';
 const Messenger = require('cnn-messaging').AmqpMessenger;
 const messenger = new Messenger(config);
 
 messenger.start()
   .then(() => {
-    return messenger.createWorkObservable('work.*', 'test-work-queue'); // you must provide a work queue name  
+    return messenger.createWorkObservable(topic, 'test-work-queue'); // you must provide a work queue name  
   })
   .then((observable) => {
       observable.subscribe(
@@ -107,9 +131,9 @@ messenger.start()
 
 ```
 
-### Websocket Relay
+### Websocket Relay from RabbitMQ
 
-If you provide a port as a parameter to the Messenger, then it will enable a websocket relay.
+If you provide a port or http instance as a parameter to the Messenger, then it will enable a websocket relay.
 
 Note: This functionality requires the optional uws module to be installed.
 

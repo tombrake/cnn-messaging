@@ -106,7 +106,14 @@ export default class AmqpMessenger extends Messenger {
     /**
     publish a message to a topic
     */
-    async publish(topic: string, message: Message): Promise<*> {
+    async publish(topicOrMessage: any, messageOnly?: Message): Promise<*> {
+        // support old method signature
+        const message = (messageOnly || topicOrMessage: Message);
+        let topic = topicOrMessage;
+        if (typeof topicOrMessage !== 'string') {
+            topic = message.getTopic();
+        }
+
         debug(`publish to topic: ${topic}, message: ${JSON.stringify(message)}`);
         if (!(message instanceof Message)) {
             return Promise.reject(new Error('provided message is not an instance of Message'));
