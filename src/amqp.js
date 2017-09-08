@@ -49,8 +49,21 @@ export default class AmqpMessenger extends Messenger {
         this.state = this.states[1];
         debug('starting');
 
-        const conn = await amqplib.connect(this.params.connectionString);
+        let conn;
+        try {
+            conn = await amqplib.connect(this.params.connectionString);
+        } catch (e) {
+            return Promise.reject(e);
+        }
         this.connection = conn;
+        this.connection.on('error', (err) => {
+            if (err.message !== 'Connection closing') {
+                console.error('AMQP connection error"', err.message);
+            }
+        });
+        this.connection.on('close', () => {
+            throw new Error('Lost connection to AMQP.');
+        });
         debug('created connection');
 
         this.channel = {
