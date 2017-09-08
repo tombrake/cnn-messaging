@@ -26,7 +26,7 @@ This module uses the [debug module](https://www.npmjs.com/package/debug). Add th
 
 * The publish method now supports a shorter signature. Publish no longer requires a topic name. The topic name can be derived from the message. Therefore, the API now allows simply messenger.publish(message). The older style messenger.publish(topic, message) is still supported, but should be considered deprecated.
 * For messages sent using the new publish signature, the CRUD actions (the last part of the topic name) are now limited to the following options: ['create', 'update', 'delete', 'upsert', 'event'].
-* In an effort to normalize the CRUD actions, _the following action mappings will take place automatically:_ [new: 'create', insert: 'create', remove: 'delete', change: 'update'].
+* In an effort to normalize the CRUD actions, __the following action mappings will take place automatically:__ [new: 'create', insert: 'create', remove: 'delete', change: 'update'].
 
 ### Messenger API
 

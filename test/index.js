@@ -123,7 +123,9 @@ describe('AmqpMessenger', function () {
         const messenger = new AmqpMessenger(amqpTestConfig);
         return messenger.start()
             .then(() => {
-                return messenger.stop();
+                setTimeout(() => {
+                    return messenger.stop();
+                }, 2000);
             });
     });
 
@@ -509,7 +511,6 @@ describe('WebsocketRelay on existing http', function () {
         });
         return amqpMessenger.start()
             .then(() => {
-                console.log(`Starting http on port ${process.env.PORT || 13001}`);
                 app.listen(process.env.PORT || 13001);
             });
     });
