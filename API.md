@@ -3,7 +3,6 @@
 ### Table of Contents
 
 -   [AmqpMessenger](#amqpmessenger)
-    -   [constructor](#constructor)
     -   [start](#start)
     -   [stop](#stop)
     -   [publish](#publish)
@@ -11,7 +10,6 @@
     -   [createNotificationObservable](#createnotificationobservable)
     -   [createWorkObservable](#createworkobservable)
 -   [Message](#message)
-    -   [constructor](#constructor-1)
     -   [toString](#tostring)
     -   [toWS](#tows)
     -   [toAmqp](#toamqp)
@@ -20,28 +18,18 @@
     -   [nack](#nack)
     -   [fromAmqp](#fromamqp)
 -   [Messenger](#messenger)
-    -   [constructor](#constructor-2)
     -   [start](#start-1)
     -   [stop](#stop-1)
     -   [publish](#publish-1)
     -   [createNotificationObservable](#createnotificationobservable-1)
     -   [createWorkObservable](#createworkobservable-1)
 -   [WebsocketRelay](#websocketrelay)
-    -   [constructor](#constructor-3)
 
 ## AmqpMessenger
 
 **Extends Messenger**
 
 A messenger that can use amqp topic exchanges and queues
-
-**Parameters**
-
--   `params` **{amqp: {connectionString: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String), exchangeName: [string](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String)}, port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
-
-### constructor
-
-Create a new amqp messenger instance
 
 **Parameters**
 
@@ -111,14 +99,6 @@ A Message object
 
 -   `message` **MessageData** 
 
-### constructor
-
-create a new instance of Message
-
-**Parameters**
-
--   `message` **MessageData** 
-
 ### toString
 
 Stringify the message
@@ -176,14 +156,6 @@ An in-memory messenger, providing pub/sub like features
 
 -   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
 
-### constructor
-
-Create a new messenger instance
-
-**Parameters**
-
--   `params` **{port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?}** 
-
 ### start
 
 start the service
@@ -233,14 +205,6 @@ Returns **[Promise](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Refe
 **Extends events.EventEmitter**
 
 A performant websocket relay for messenger
-
-**Parameters**
-
--   `params` **{messenger: [Messenger](#messenger), port: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)?, http&#x3A; any?, pingInterval: [number](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number)}** 
-
-### constructor
-
-create a new instance of websocket relay
 
 **Parameters**
 

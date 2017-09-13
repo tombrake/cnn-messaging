@@ -15,10 +15,6 @@ export default class AmqpMessenger extends Messenger {
         connectionString: string;
         exchangeName: string;
     };
-    channel: {
-        notification: any;
-        work: any;
-    };
     connection: any;
 
     /**
@@ -107,20 +103,9 @@ export default class AmqpMessenger extends Messenger {
     publish a message to a topic
     */
     async publish(topicOrMessage: any, messageOnly?: Message): Promise<*> {
-        // support old method signature
-        const message = (messageOnly || topicOrMessage: Message);
-        let topic = topicOrMessage;
-        if (typeof topicOrMessage !== 'string') {
-            topic = message.getTopic();
-        }
-
-        debug(`publish to topic: ${topic}, message: ${JSON.stringify(message)}`);
-        if (!(message instanceof Message)) {
-            return Promise.reject(new Error('provided message is not an instance of Message'));
-        }
-
+        const message = this._prepublish(topicOrMessage, messageOnly);
         return new Promise((resolve, reject) => {
-            if (this.channel.notification.publish(this.params.exchangeName, topic, message.toAmqp())) {
+            if (this.channel.notification.publish(this.params.exchangeName, message.getTopic(), message.toAmqp())) {
                 debug('amqp sent message');
                 return resolve();
             }
@@ -184,19 +169,5 @@ export default class AmqpMessenger extends Messenger {
             };
         });
         return this.observables[type][topic];
-    }
-
-    /**
-    create an observable for a given topic, that is meant for multiple recipients per message
-    */
-    async createNotificationObservable(topic: string): Promise<Rx.Observable<*>> {
-        return this._createObservable(topic, 'notification', '');
-    }
-
-    /**
-    create an observable for a given topic, that is meant for a single recipient per message
-    */
-    async createWorkObservable(topic: string, queue: string): Promise<Rx.Observable<*>> {
-        return this._createObservable(topic, 'work', queue);
     }
 }

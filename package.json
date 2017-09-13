@@ -52,13 +52,14 @@
     "sinon": "^3.2.1"
   },
   "engines": {
-    "node": ">=4.0.0"
+    "node": ">=6.0.0"
   },
   "dependencies": {
     "amqplib": "^0.5.1",
     "debug": "^3.0.1",
     "postinstall-build": "^5.0.1",
     "rxjs": "^5.3.0",
+    "rxmq": "^1.1.2",
     "uuid": "^3.0.1"
   },
   "optionalDependencies": {
