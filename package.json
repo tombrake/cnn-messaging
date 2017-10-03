@@ -47,7 +47,7 @@
     "flow-bin": "^0.54.1",
     "flow-typed": "^2.1.2",
     "istanbul": "^1.1.0-alpha.1",
-    "mocha": "^3.2.0",
+    "mocha": "^4.0.0",
     "remap-istanbul": "^0.9.5",
     "sinon": "^3.2.1"
   },
