@@ -40,7 +40,7 @@
     "babel-preset-flow": "^6.23.0",
     "chai": "^4.1.2",
     "cnn-metrics": "^0.5.0",
-    "coveralls": "^2.13.0",
+    "coveralls": "^3.0.0",
     "documentation": "^5.3.1",
     "eslint": "^4.6.1",
     "express": "^4.15.2",
