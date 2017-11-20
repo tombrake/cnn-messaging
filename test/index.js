@@ -1,6 +1,7 @@
 'use strict';
 
 const chai = require('chai');
+const sinon = require('sinon');
 chai.should();
 
 const Messenger = require('../index').Messenger;
@@ -106,15 +107,11 @@ describe('Message', function () {
         (msg.context.action).should.equal('create');
     });
 
-    it('should not accept invalid actions', function () {
-        let msg;
-        try {
-            msg = new Message({context: {action: 'bad'}});
-            (true).should.equal(false); //shouldnt get here
-        } catch (e) {
-            (e).should.exist;
-            (msg === undefined).should.be.true;
-        }
+    it('should warn on invalid actions', function () {
+        var spy = sinon.spy(console, 'log');
+        var msg = new Message({context: {action: 'bad'}});
+        spy.calledWith('Use of deprecated action "bad" in Message Context.');
+        (msg).should.exist;
     });
 });
 
