@@ -70,7 +70,7 @@ export default class Message {
             this.context.action = actionsMap[this.context.action];
         }
         if (!this.context.action || actions.indexOf(this.context.action) < 0) {
-            debug(`Message context has invalid action: ${this.context.action}. This will be deprecated in a future release.`);
+            debug(`Use of deprecated action "${this.context.action}" in Message Context.`);
         }
         this.event = message.event;
         this.id = (message.id || uuidV1());
