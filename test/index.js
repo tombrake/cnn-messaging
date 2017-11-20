@@ -1,6 +1,8 @@
 'use strict';
 
 const chai = require('chai');
+const expect = chai.expect;
+const debug = require('debug');
 const sinon = require('sinon');
 chai.should();
 
@@ -107,10 +109,11 @@ describe('Message', function () {
         (msg.context.action).should.equal('create');
     });
 
-    it('should warn on invalid actions', function () {
-        var spy = sinon.spy(console, 'log');
+    it('should allow invalid actions for now and warn', function () {
+        var debugSpy = sinon.spy(debug);
         var msg = new Message({context: {action: 'bad'}});
-        spy.calledWith('Use of deprecated action "bad" in Message Context.');
+        expect(debugSpy.withArgs('new message { context: { action: \'bad\' } }').calledOnce);
+        expect(debugSpy.withArgs('Use of deprecated action "bad" in Message Context.').calledOnce);
         (msg).should.exist;
     });
 });
